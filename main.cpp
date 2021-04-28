@@ -21,7 +21,7 @@ float getRealtimeCurrent();
 float getRMSCurrent(unsigned int interval);
 int postCurrent(float f);
 
-int main (void) {
+int main(void) {
 	std::cout << "Opening SPI connection..." << std::endl;
 	fd = open("/dev/spidev0.0", O_RDWR);
 
@@ -46,17 +46,13 @@ int main (void) {
 
 	float current;
 	while(1) {
-		std::cout << "Starting loop";
 		if(operatingMode == MODE_INST){
-			std::cout << "Reading current";
 			current = readInstCurrent(fd);
-			std::cout << "Sending message";
 			if(connection.sendCurrentMessage(current) != 0){
 				std::cout << "Error sending message";
 				break;
 			}
 			else {
-				std::cout << "Sleeping";
 				usleep(SPI_TIMEOUT);
 			}
 		}
@@ -65,7 +61,6 @@ int main (void) {
 			postCurrent(current);
 		}
 	}
-	std::cout << "Exiting" << std::endl;
 }
 
 int postCurrent(float current){

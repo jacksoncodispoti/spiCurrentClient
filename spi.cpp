@@ -18,7 +18,7 @@ int readValue(int fd){
 }
 
 int spiTxRx(int fd, unsigned char txDat) {
-	unsigned char rxDat;
+	unsigned char rxDat = 0;
 
 	struct spi_ioc_transfer spi;
 	memset (&spi, 0, sizeof (spi));
@@ -27,7 +27,7 @@ int spiTxRx(int fd, unsigned char txDat) {
 	spi.rx_buf        = (unsigned long)&rxDat;
 	spi.len           = 1;
 
-	ioctl (fd, SPI_IOC_MESSAGE(1), &spi);
+	ioctl(fd, SPI_IOC_MESSAGE(1), &spi);
 
 	return rxDat;
 }
