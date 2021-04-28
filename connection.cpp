@@ -17,7 +17,7 @@ int CommandConnection::open(){
 	}
 	
 	if(connect(m_sock, (struct sockaddr*) &serv_addr, sizeof(serv_addr)) < 0){
-		std::cout << "Failed to connect" << std::endl;
+		std::cout << "\tFailed to connect" << std::endl;
 		return -1;
 	}
 

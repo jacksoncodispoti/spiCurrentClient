@@ -26,9 +26,13 @@ int main (void) {
 	fd = open("/dev/spidev0.0", O_RDWR);
 
 	CommandConnection connection(SERVER_ADDR, SERVER_PORT);
+
 	if(operatingMode == MODE_INST){
-		std::cout << "Opening TCP connection.." << std::endl;
-		connection.open();
+		std::cout << "Connecting to " << SERVER_ADDR << ":" << SERVER_PORT << std::endl;
+		while(connection.open() != 0) {
+			sleep(5);
+			std::cout << "\tRe-trying..." << std::endl;
+		}
 
 		std::cout << "Sending ID" << std::endl;
 		connection.sendIDMessage(DEVICE_ID);
