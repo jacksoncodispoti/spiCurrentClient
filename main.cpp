@@ -1,5 +1,6 @@
 #include <iostream>
 #include <stdlib.h>
+#include <csignal>
 
 #include "spi.h"
 #include "connection.h"
@@ -21,46 +22,56 @@ float getRealtimeCurrent();
 float getRMSCurrent(unsigned int interval);
 int postCurrent(float f);
 
+void sigpipe_handler(int signum) {
+	exit(signum);
+}
+
 int main(void) {
+	signal(SIGPIPE, SIG_IGN);
 	std::cout << "Opening SPI connection..." << std::endl;
 	fd = open("/dev/spidev0.0", O_RDWR);
 
 	CommandConnection connection(SERVER_ADDR, SERVER_PORT);
 
-	if(operatingMode == MODE_INST){
-		std::cout << "Connecting to " << SERVER_ADDR << ":" << SERVER_PORT << std::endl;
-		while(connection.open() != 0) {
-			sleep(5);
-			std::cout << "\tRe-trying..." << std::endl;
-		}
-
-		std::cout << "Sending ID" << std::endl;
-		connection.sendIDMessage(DEVICE_ID);
-	}
-
-
-	std::cout << "Aligning SPI stream..." << std::endl;
-	unsigned int speed = 1000000;
-	ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, &speed);
-	alignBuffer(fd);
-
-	float current;
 	while(1) {
 		if(operatingMode == MODE_INST){
-			current = readInstCurrent(fd);
-			if(connection.sendCurrentMessage(current) != 0){
-				std::cout << "Error sending message";
-				break;
+			std::cout << "Connecting to " << SERVER_ADDR << ":" << SERVER_PORT << std::endl;
+			while(connection.open() != 0) {
+				sleep(5);
+				std::cout << "\tRe-trying..." << std::endl;
 			}
-			else {
-				usleep(SPI_TIMEOUT);
-			}
+
+			std::cout << "Sending ID" << std::endl;
+			connection.sendIDMessage(DEVICE_ID);
 		}
-		else{
-			current = readRMSCurrent(fd, 250);
-			postCurrent(current);
+
+
+		std::cout << "Aligning SPI stream..." << std::endl;
+		unsigned int speed = 1000000;
+		ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, &speed);
+		alignBuffer(fd);
+
+		float current;
+		while(1) {
+			if(operatingMode == MODE_INST){
+				current = readInstCurrent(fd);
+				if(connection.sendCurrentMessage(current) != 0){
+					std::cerr << "Error sending message" << std::endl;
+					break;
+				}
+				else {
+					usleep(SPI_TIMEOUT);
+				}
+			}
+			else{
+				current = readRMSCurrent(fd, 250);
+				postCurrent(current);
+			}
 		}
 	}
+	std::cout << "Exiting" << std::endl;
+
+	return 0;
 }
 
 int postCurrent(float current){

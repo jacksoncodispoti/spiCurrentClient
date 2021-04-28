@@ -42,20 +42,19 @@ int CommandConnection::sendCurrentMessage(float current){
 
 	char packet[8] = {AS_CMD_CUR, 0, 0x22, data[1], data[2], data[3], 0, 0 };
 
-	sendPacket(packet);
-	return 0;
+	return sendPacket(packet);
 }
 
 int CommandConnection::sendPacket(char packet[8]){
 	int res = send(m_sock, packet, 8, 0);
 
-	if(res != 0) {
+	if(res < 8) {
 		return -1;
 	}
 
 	res = read(m_sock, m_commandBuffer, 8);
 
-	if(res < 0) {
+	if(res < 8) {
 		return -1;
 	}
 	executeCommand();
