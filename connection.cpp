@@ -47,9 +47,17 @@ int CommandConnection::sendCurrentMessage(float current){
 }
 
 int CommandConnection::sendPacket(char packet[8]){
-	send(m_sock, packet, 8, 0);
+	int res = send(m_sock, packet, 8, 0);
 
-	read(m_sock, m_commandBuffer, 8);
+	if(res != 0) {
+		return -1;
+	}
+
+	res = read(m_sock, m_commandBuffer, 8);
+
+	if(res < 0) {
+		return -1;
+	}
 	executeCommand();
 	return 0;
 }

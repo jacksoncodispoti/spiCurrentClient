@@ -1,2 +1,2 @@
 all:
-	g++ spi.cpp connection.cpp main.cpp -Wall -o spiClient
+	g++ -g -O0 spi.cpp connection.cpp main.cpp -Wall -o spiClient

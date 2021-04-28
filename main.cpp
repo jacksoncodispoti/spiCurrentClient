@@ -11,8 +11,8 @@ const int SERVER_PORT = 5942;
 const int WEB_PORT = 5000;
 const int DEVICE_ID = 37;
 
-int fd;
-unsigned char result;
+int fd = 0;
+unsigned char result = 0;
 unsigned int operatingMode = MODE_INST;
 //unsigned int operatingMode = MODE_RMS;
 char commandBuffer[128];
@@ -46,16 +46,26 @@ int main (void) {
 
 	float current;
 	while(1) {
+		std::cout << "Starting loop";
 		if(operatingMode == MODE_INST){
+			std::cout << "Reading current";
 			current = readInstCurrent(fd);
-			connection.sendCurrentMessage(current);
-			usleep(SPI_TIMEOUT);
+			std::cout << "Sending message";
+			if(connection.sendCurrentMessage(current) != 0){
+				std::cout << "Error sending message";
+				break;
+			}
+			else {
+				std::cout << "Sleeping";
+				usleep(SPI_TIMEOUT);
+			}
 		}
 		else{
 			current = readRMSCurrent(fd, 250);
 			postCurrent(current);
 		}
 	}
+	std::cout << "Exiting" << std::endl;
 }
 
 int postCurrent(float current){
